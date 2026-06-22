@@ -19,12 +19,9 @@ module RX_Top (
     logic                  full;       
 
     // SERIAL (UART RX)
-    RX #(
-        .OVERSAMPLE (OVERSAMPLE), 
-        .DATA_WIDTH (DATA_WIDTH)
-    ) rx_blk (
+    RX rx_blk (
         .BCLK       (BCLK),
-        .reset      (reset_n),
+        .reset_n    (reset_n),
         .rx         (rx),
         .rx_write   (full),       
         .rx_dout    (rx_dout),
@@ -37,13 +34,13 @@ module RX_Top (
         .ADDR_WIDTH (4)           
     ) rx_fifo (
         .wclk       (BCLK),
-        .wreset     (reset_n),
+        .wreset_n   (reset_n),
         .winc       (rx_done_tk), 
         .wdata      (rx_dout),
         .wfull      (full),
 
         .rclk       (UCLK),
-        .rreset     (reset_n),
+        .rreset_n   (reset_n),
         .rinc       (rd_uart),    
         .rdata      (R_data),
         .rempty     (rx_empty)

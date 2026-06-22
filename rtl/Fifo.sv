@@ -1,17 +1,18 @@
+import UART_pkg::*;
+
 module async_fifo #(
-    parameter int DATA_WIDTH = 8
     parameter int ADDR_WIDTH = 4  
 )(
     // Write Domain
     input  logic                  wclk,
-    input  logic                  wreset, // Active High
+    input  logic                  wreset_n, 
     input  logic                  winc,   // Write Enable
     input  logic [DATA_WIDTH-1:0] wdata,
     output logic                  wfull,
 
     // Read Domain
     input  logic                  rclk,
-    input  logic                  rreset, // Active High
+    input  logic                  rreset_n, 
     input  logic                  rinc,   // Read Enable
     output logic [DATA_WIDTH-1:0] rdata,
     output logic                  rempty
@@ -40,8 +41,8 @@ module async_fifo #(
     assign rdata = mem[rptr_bin[ADDR_WIDTH-1:0]];
     
     // Move Gray write pointer to Read Clock domain
-    always_ff @(posedge rclk or posedge rreset) begin
-        if (rreset) begin
+    always_ff @(posedge rclk or negedge rreset_n) begin
+        if (!rreset_n) begin
             {rq2_wptr, rq1_wptr} <= '0;
         end else begin
             {rq2_wptr, rq1_wptr} <= {rq1_wptr, wptr_gray};
@@ -49,8 +50,8 @@ module async_fifo #(
     end
 
     // Move Gray read pointer to Write Clock domain
-    always_ff @(posedge wclk or posedge wreset) begin
-        if (wreset) begin
+    always_ff @(posedge wclk or negedge wreset_n) begin
+        if (!wreset_n) begin
             {wq2_rptr, wq1_rptr} <= '0;
         end else begin
             {wq2_rptr, wq1_rptr} <= {wq1_rptr, rptr_gray};
@@ -63,8 +64,8 @@ module async_fifo #(
     assign rptr_bin_next  = rptr_bin + (rinc & ~rempty);
     assign rptr_gray_next = (rptr_bin_next >> 1) ^ rptr_bin_next;
 
-    always_ff @(posedge rclk or posedge rreset) begin
-        if (rreset) begin
+    always_ff @(posedge rclk or negedge rreset_n) begin
+        if (!rreset_n) begin
             rptr_bin  <= '0;
             rptr_gray <= '0;
         end else begin
@@ -75,8 +76,8 @@ module async_fifo #(
 
     assign rempty_val = (rptr_gray_next == rq2_wptr);
 
-    always_ff @(posedge rclk or posedge rreset) begin
-        if (rreset) rempty <= 1'b1; 
+    always_ff @(posedge rclk or negedge rreset_n) begin
+        if (!rreset_n) rempty <= 1'b1; 
         else        rempty <= rempty_val;
     end
 
@@ -86,8 +87,8 @@ module async_fifo #(
     assign wptr_bin_next  = wptr_bin + (winc & ~wfull);
     assign wptr_gray_next = (wptr_bin_next >> 1) ^ wptr_bin_next;
 
-    always_ff @(posedge wclk or posedge wreset) begin
-        if (wreset) begin
+    always_ff @(posedge wclk or negedge wreset_n) begin
+        if (!wreset_n) begin
             wptr_bin  <= '0;
             wptr_gray <= '0;
         end else begin
@@ -99,8 +100,8 @@ module async_fifo #(
     assign wfull_val = (wptr_gray_next == {~wq2_rptr[ADDR_WIDTH:ADDR_WIDTH-1], 
                                             wq2_rptr[ADDR_WIDTH-2:0]});
 
-    always_ff @(posedge wclk or posedge wreset) begin
-        if (wreset) wfull <= 1'b0;
+    always_ff @(posedge wclk or negedge wreset_n) begin
+        if (!wreset_n) wfull <= 1'b0;
         else        wfull <= wfull_val;
     end
 

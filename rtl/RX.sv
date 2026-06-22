@@ -24,8 +24,8 @@ module RX import UART_pkg::*;
     logic [DATA_BITS-1:0]  data_bits_counter;
 
     // FSM (Sequential)
-    always_ff @(posedge BCLK or posedge reset_n) begin
-        if (reset_n == 1'b0) begin
+    always_ff @(posedge BCLK or negedge reset_n) begin
+        if (!reset_n) begin
             current_state <= IDLE;
         end else begin
             current_state <= next_state;
@@ -57,8 +57,8 @@ module RX import UART_pkg::*;
     end
 
     // DATAPATH (Sequential)
-    always_ff @(posedge BCLK or posedge reset_n) begin
-        if (reset_n == 1'b0) begin
+    always_ff @(posedge BCLK or negedge reset_n) begin
+        if (!reset_n) begin
             tk_counter        <= '0;
             data_bits_counter <= '0;
             shift_reg         <= '0;
@@ -68,7 +68,7 @@ module RX import UART_pkg::*;
             // Default values for outputs and counters
             rx_done_tk <= 1'b0; 
 
-            case (current_state)
+            case (current_state) 
                 IDLE: begin
                     tk_counter        <= '0;
                     data_bits_counter <= '0;
