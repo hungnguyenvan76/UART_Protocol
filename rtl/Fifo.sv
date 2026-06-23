@@ -1,8 +1,7 @@
 import UART_pkg::*;
 
-module async_fifo #(
-    parameter int ADDR_WIDTH = 4  
-)(
+module async_fifo 
+(
     // Write Domain
     input  logic                  wclk,
     input  logic                  wreset_n, 
