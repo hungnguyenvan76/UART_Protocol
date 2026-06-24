@@ -1,7 +1,8 @@
 import UART_pkg::*;
 
-module async_fifo 
-(
+module async_fifo #(
+    parameter int ADDR_WIDTH = 4  
+)(
     // Write Domain
     input  logic                  wclk,
     input  logic                  wreset_n, 
@@ -19,6 +20,12 @@ module async_fifo
     localparam int FIFO_DEPTH = 1 << ADDR_WIDTH;
 
     logic [DATA_WIDTH-1:0] mem [0:FIFO_DEPTH-1];
+
+    initial begin
+        for (int i = 0; i < FIFO_DEPTH; i++) begin
+            mem[i] = '0;
+        end
+    end
 
     logic [ADDR_WIDTH:0] wptr_bin, wptr_gray, wptr_gray_next;
     logic [ADDR_WIDTH:0] rptr_bin, rptr_gray, rptr_gray_next;

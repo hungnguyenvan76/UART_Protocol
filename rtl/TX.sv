@@ -70,14 +70,15 @@ module TX
                     tx                <= 1'b1; 
                     tk_counter        <= '0;
                     data_bits_counter <= '0;
+
+                    if (tx_start) begin
+                        shift_reg <= tx_din;
+                        tx_done_tk <= 1'b1;
+                    end
                 end
 
                 START: begin
                     tx <= 1'b0; // Start Bit: LOW
-                    
-                    if (tx_start) begin
-                        shift_reg <= tx_din;
-                    end
 
                     if (tk_counter == OVERSAMPLE - 1) begin
                         tk_counter <= '0; // Reset counter for DATA
@@ -104,7 +105,7 @@ module TX
                     
                     if (tk_counter == OVERSAMPLE - 1) begin
                         tk_counter <= '0;
-                        tx_done_tk <= 1'b1; // Done 1 frame
+                        // tx_done_tk <= 1'b1; // Done 1 frame
                     end else begin
                         tk_counter <= tk_counter + 1'b1;
                     end
